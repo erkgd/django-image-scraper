@@ -1,0 +1,73 @@
+{% extends 'scraper/base.html' %}
+
+{% block title %}Advanced Search - Image Scraper{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h1 class="text-2xl font-bold mb-6">Advanced Image Search</h1>
+        
+        <form method="get" action="{% url 'index' %}" class="space-y-6">
+            <div>
+                <label for="id_query" class="block text-sm font-medium text-gray-700 mb-1">Search Query</label>
+                {{ form.query }}
+                <p class="mt-1 text-xs text-gray-500">Enter keywords to search for images</p>
+            </div>
+            
+            <div>
+                <h2 class="text-lg font-medium mb-3">Filters</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="id_copyright_filter" class="block text-sm font-medium text-gray-700 mb-1">Copyright Filter</label>
+                        {{ form.copyright_filter }}
+                        <p class="mt-1 text-xs text-gray-500">Filter images by copyright status</p>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div class="flex items-center h-full pt-6">
+                            {{ form.transparent_only }}
+                            <label for="id_transparent_only" class="ml-2 block text-sm text-gray-700">
+                                Transparent images only
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg">
+                    Search Images
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">Search Tips</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <h3 class="text-lg font-medium text-gray-800">Finding the right images</h3>
+                <p class="text-gray-600 mt-1">Use specific keywords to narrow down your search. For example, instead of "dog", try "golden retriever puppy".</p>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-medium text-gray-800">Copyright filters</h3>
+                <p class="text-gray-600 mt-1">Different copyright filters allow you to find images that you can use for various purposes:</p>
+                <ul class="list-disc list-inside mt-2 text-gray-600 space-y-1">
+                    <li><span class="font-medium">Free to use</span>: Images with Creative Commons licenses</li>
+                    <li><span class="font-medium">Free for commercial use</span>: Images that can be used in commercial projects</li>
+                    <li><span class="font-medium">Free for noncommercial use</span>: Images that can only be used in non-commercial projects</li>
+                    <li><span class="font-medium">Free to modify</span>: Images that can be modified or adapted</li>
+                </ul>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-medium text-gray-800">Transparent images</h3>
+                <p class="text-gray-600 mt-1">Checking "Transparent images only" will find images with transparent backgrounds, which are useful for design projects where you need to overlay images on different backgrounds.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'scraper/base.html' %}
+
+{% block title %}Your Profile - Image Scraper{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div class="p-6 border-b">
+            <h1 class="text-2xl font-bold">Your Profile</h1>
+            <p class="text-gray-600 mt-1">Welcome back, {{ user.username }}!</p>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">Liked Images</h2>
+            </div>
+            
+            <div class="divide-y">
+                {% for image in liked_images %}
+                    <div class="p-4 flex items-center">
+                        <div class="flex-shrink-0">
+                            <img src="{{ image.thumbnail_url }}" alt="{{ image.title }}" class="w-16 h-16 object-cover rounded">
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-sm font-medium">
+                                <a href="{% url 'image_detail' image.id %}" class="hover:underline">{{ image.title }}</a>
+                            </h3>
+                            <p class="text-xs text-gray-500 mt-1">Liked on {{ image.like_set.first.created_at|date:"F j, Y" }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="p-4 text-center text-gray-500">
+                        You haven't liked any images yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-4 border-b">
+                <h2 class="text-lg font-semibold">Recent Comments</h2>
+            </div>
+            
+            <div class="divide-y">
+                {% for comment in comments %}
+                    <div class="p-4">
+                        <h3 class="text-sm font-medium">
+                            <a href="{% url 'image_detail' comment.image.id %}" class="hover:underline">{{ comment.image.title }}</a>
+                        </h3>
+                        <p class="text-sm text-gray-700 mt-1">{{ comment.text }}</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ comment.created_at|date:"F j, Y, g:i a" }}</p>
+                    </div>
+                {% empty %}
+                    <div class="p-4 text-center text-gray-500">
+                        You haven't commented on any images yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="p-4 border-b">
+            <h2 class="text-lg font-semibold">Search History</h2>
+        </div>
+        
+        <div class="divide-y">
+            {% for search in search_history %}
+                <div class="p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium">{{ search.query }}</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ search.created_at|date:"F j, Y, g:i a" }}</p>
+                    </div>
+                    <a href="{% url 'index' %}?query={{ search.query }}{% if search.filters.copyright_filter %}&copyright_filter={{ search.filters.copyright_filter }}{% endif %}{% if search.filters.transparent_only %}&transparent_only=on{% endif %}" class="text-blue-500 hover:underline text-sm">
+                        Search Again
+                    </a>
+                </div>
+            {% empty %}
+                <div class="p-4 text-center text-gray-500">
+                    No search history found.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
