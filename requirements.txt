@@ -1,5 +1,1 @@
-Django==4.2.7
-requests==2.31.0
-beautifulsoup4==4.12.2
-Pillow==10.0.0
-django-tailwind==3.6.0
+django-cors-headers>=3.13.0

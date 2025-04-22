@@ -14,6 +14,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 INSTALLED_APPS = [
+    'corsheaders',  # for CORS
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -23,9 +24,11 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'scraper',
+    'rest_framework',  # Added DRF for API endpoints
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # add CORS middleware
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -107,3 +110,12 @@ INTERNAL_IPS = [
 # Login URL
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',  # Allow public API access
+    ],
+}
+
+# Allow all origins during development for Next.js front-end
+CORS_ALLOW_ALL_ORIGINS = True
