@@ -4,9 +4,9 @@ from django.utils import timezone
 
 class Image(models.Model):
     title = models.CharField(max_length=255)
-    url = models.URLField()
-    source_url = models.URLField()
-    thumbnail_url = models.URLField()
+    url = models.URLField(max_length=2000)
+    source_url = models.URLField(max_length=2000)
+    thumbnail_url = models.URLField(max_length=2000)
     is_transparent = models.BooleanField(default=False)
     copyright_status = models.CharField(max_length=50, choices=[
         ('free', 'Free to use'),

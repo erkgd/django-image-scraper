@@ -1,0 +1,50 @@
+# Archivos compilados y temporales
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs y bases de datos locales
+*.log
+*.sqlite3
+
+# Directorios y archivos generados
+node_modules/
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.cover
+
+# Archivos estáticos y media recopilados
+/static/
+/media/
+
+# Archivos específicos de Docker
+.env
+.dockerignore
+
+# Archivos de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos de OS
+.DS_Store
+Thumbs.db

@@ -129,6 +129,63 @@ L'aplicació està dissenyada per ser extensible. Algunes àrees que es poden pe
 - **Fonts de dades**: Canviant l'estratègia de scraping o utilitzant APIs d'imatges
 - **Funcionalitats**: Afegint noves característiques a través de vistes de Django addicionals
 
+## Configuració amb Docker
+
+### Requisits previs per Docker
+
+- Docker i Docker Compose instal·lats al sistema
+- Git per clonar el repositori
+
+### Passos per executar amb Docker
+
+1. **Clonar el repositori**:
+   ```bash
+   git clone <url-del-repositori>
+   cd django-image-scraper
+   ```
+
+2. **Construir i iniciar els contenidors**:
+   ```bash
+   docker-compose build
+   docker-compose up -d
+   ```
+
+3. **Verificar que els contenidors estan en funcionament**:
+   ```bash
+   docker-compose ps
+   ```
+
+4. **Accedir a l'aplicació**:
+   Obre el navegador i accedeix a `http://localhost/`
+
+### Comandes útils de Docker
+
+- **Veure registres de l'aplicació**:
+  ```bash
+  docker-compose logs -f web
+  ```
+
+- **Executar comandes dins del contenidor Django**:
+  ```bash
+  docker-compose exec web python manage.py [comanda]
+  ```
+
+- **Aturar tots els serveis**:
+  ```bash
+  docker-compose down
+  ```
+
+- **Aturar els serveis i eliminar volums de dades**:
+  ```bash
+  docker-compose down -v
+  ```
+
+### Estructura de contenidors
+
+- **db**: PostgreSQL per emmagatzemar dades
+- **web**: Aplicació Django servida amb Gunicorn
+- **nginx**: Servidor web per servir contingut estàtic i actuar com a proxy invers
+
 ## Llicència
 
 Aquest projecte és només per a finalitats educatives.

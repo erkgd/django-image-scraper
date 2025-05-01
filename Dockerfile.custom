@@ -1,0 +1,51 @@
+FROM python:3.11-slim
+
+# Variables de entorno
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DEBUG=False
+
+# Crear usuario no root para seguridad
+RUN addgroup --system app && adduser --system --group app
+
+WORKDIR /app
+
+# Instalar dependencias del sistema para producción
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpq-dev \
+        netcat-traditional \
+        postgresql-client \
+        curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements.txt primero para mejor uso de caché
+COPY requirements.txt .
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir gunicorn \
+    && pip install --no-cache-dir djangorestframework==3.14.0 \
+    && pip install --no-cache-dir django-cors-headers==3.13.0
+
+# Copiar el resto del código
+COPY --chown=app:app . .
+COPY --chown=app:app docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Crear directorios necesarios
+RUN mkdir -p /app/media /app/static \
+    && chown -R app:app /app/media /app/static
+
+# Cambiar al usuario no privilegiado
+USER app
+
+# Exponer el puerto
+EXPOSE 8000
+
+# Punto de entrada
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+# Comando por defecto
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "image_scraper.wsgi:application"]
