@@ -594,7 +594,7 @@ tar -czf media-backup-$(date +%Y%m%d).tar.gz media/
 ### Còpies de Seguretat amb Docker
 
 ```powershell
-# Còpia de seguretat de la base de dades PostgreSQL
+# Còpia de seguretat de la base de dades PostgreSQL.
 docker-compose exec db pg_dump -U postgres image_scraper > backup_$(Get-Date -Format "yyyyMMdd").sql
 
 # Còpia de seguretat dels volums de Docker
