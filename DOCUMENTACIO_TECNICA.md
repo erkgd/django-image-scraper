@@ -2,7 +2,7 @@
 
 ## Estructura del Projecte
 
-El projecte Django Image Scraper està organitzat seguint la estructura estàndard d'una aplicació Django, amb algunes personalitzacions per integrar l'ús de TailwindCSS i components frontend addicionals.
+El projecte Django Image Scraper està organitzat seguint la estructura estàndard d'una aplicació Django, amb algunes personalitzacions per integrar l'ús de TailwindCSS i components frontend addicionals. La arquitectura combina un backend tradicional Django amb una API REST.
 
 ```
 django-image-scraper/
@@ -20,7 +20,9 @@ django-image-scraper/
 │   ├── forms.py                 # Formularis del projecte
 │   ├── models.py                # Models de dades
 │   ├── urls.py                  # Definicions d'URL específiques de l'aplicació
-│   ├── views.py                 # Vistes i lògica de control
+│   ├── views.py                 # Vistes HTML i lògica de control
+│   ├── api_views.py             # Vistes per a l'API REST
+│   ├── serializers.py           # Serialitzadors per a l'API REST
 │   ├── utils.py                 # Funcions d'utilitat general
 │   ├── google_scraper.py        # Lògica específica de scraping de Google
 │   └── api_service.py           # Implementació alternativa amb APIs d'imatges
@@ -200,39 +202,96 @@ details_view -> user : 17. Vista actualitzada
 @enduml
 ```
 
-## Descripció de l'API Implementada
 
-El projecte implementa diverses API internes utilitzades per la interfície web. Tot i que no hi ha una API REST completa, hi ha diversos endpoints que proporcionen funcionalitats clau:
 
-### Endpoints Principals
+### Vistes Web (HTML)
 
-1. **API d'Autenticació**
-   - `/accounts/login/`: Inici de sessió d'usuari
-   - `/accounts/logout/`: Tancament de sessió
-   - `/signup/`: Registre de nou usuari
-  
-2. **API de Cerca**
-   - `/`: Cerca bàsica d'imatges
-   - `/advanced-search/`: Cerca avançada amb més opcions de filtratge
-   
-3. **API d'Imatges**
-   - `/image/<int:image_id>/`: Veure detalls d'una imatge específica
-   - `/image/<int:image_id>/like/`: Afegir/eliminar "m'agrada" a una imatge (AJAX)
-   - `/image/<int:image_id>/comment/`: Afegir un comentari a una imatge
-   
-4. **API d'Usuari**
-   - `/profile/`: Veure i gestionar el perfil d'usuari, historial i interaccions
+Aquestes són les vistes tradicionals de l'aplicació web que retornen pàgines HTML completes:
+
+- `GET /`: Pàgina principal de cerca (index)
+- `GET /image/{id}/`: Vista detallada d'una imatge
+- `POST /image/{id}/like/`: Afegir/eliminar "m'agrada" via AJAX
+- `POST /image/{id}/comment/`: Afegir un comentari via formulari
+- `GET /profile/`: Perfil d'usuari
+- `GET /advanced-search/`: Formulari de cerca avançada
+- `GET/POST /signup/`: Registre de nou usuari
+- `/admin/`, `/accounts/login/`, `/accounts/logout/`: Vistes d'autenticació de Django
 
 ### Formats de Resposta
 
-- **Pàgines HTML**: La majoria dels endpoints retornen pàgines HTML renderitzades.
-- **JSON**: Els endpoints AJAX com el d'afegir "m'agrada" retornen respostes JSON:
+#### API REST
+
+
+## ApiRest. Per accedir als continguts de la api rest, procedir a fer curl o en el navegador:
+
+Autenticació y perfil
+• POST /api/register/ – Registre
+• GET /api/profile/ – Dades d'usuari
+
+CRUD imágenes (Django REST Framework ViewSet)
+• GET /api/images/ – Llistar imatges
+• POST /api/images/ – Crear imatge
+• GET /api/images/{id}/ – Detall de imatge
+• PUT /api/images/{id}/ – Reemplaç imatge
+• PATCH /api/images/{id}/ – Actualitzar parcialment
+• DELETE /api/images/{id}/ – Borrar imatge
+
+Acciones custom sobre imágenes
+• GET /api/images/search/?query=… – Cerca imatges
+• GET /api/images/{id}/comments/ – Listar comentaris d'una imatge
+• POST /api/images/{id}/comment/ – Añadir comentario (autenticat)
+• POST /api/images/{id}/like/ – Marcar/desmarcar “magrada” (autenticat)
+
+CRUD comentaris, likes i historial
+• GET/POST/PUT/PATCH/DELETE /api/comments/ – CRUD comentaris
+• GET/POST/PUT/PATCH/DELETE /api/likes/ – CRUD likes
+• GET/POST/PUT/PATCH/DELETE /api/history/ – CRUD historial de cerca
+
+Vistes web
+• GET / – Página de búsqueda (index)
+• GET /image/{id}/ – Detall d'imatge
+• POST /image/{id}/like/ – Like vía AJAX
+• POST /image/{id}/comment/ – Comentari via formulari
+• GET /profile/ – Perfil web
+• GET /advanced-search/ – Cerca avançada (formulari)
+• GET/POST /signup/ – Registre de usuari
+• /admin/, /accounts/login/, /accounts/logout/… (autenticació Django)
+
+
+- **JSON**: Tots els endpoints de l'API REST retornen respostes en format JSON:
+  
+  Exemple de resposta d'una imatge:
+  ```json
+  {
+    "id": 42,
+    "title": "Resultado para: test",
+    "url": "https://example.com/image.jpg",
+    "source_url": "https://www.google.com/search?q=test&tbm=isch",
+    "thumbnail_url": "https://example.com/thumbnail.jpg",
+    "is_transparent": false,
+    "copyright_status": "unknown",
+    "width": 800,
+    "height": 600,
+    "file_size": 102400,
+    "file_type": "jpg",
+    "created_at": "2025-05-01T12:34:56.789Z",
+    "likes_count": 5,
+    "comments_count": 3
+  }
+  ```
+
+  Exemple de resposta d'una acció de "m'agrada":
   ```json
   {
     "liked": true,
     "likes_count": 5
   }
   ```
+
+#### Vistes Web
+
+- **Pàgines HTML**: Totes les vistes web retornen pàgines HTML renderitzades amb Tailwind CSS.
+- **AJAX**: Algunes funcionalitats com "m'agrada" utilitzen AJAX per actualitzar contingut sense recarregar la pàgina.
 
 ### Funcions de Web Scraping
 
@@ -268,8 +327,10 @@ def scrape_google_images(query, copyright_filter=None, transparent_only=False, m
    
    # Crear i activar entorn virtual
    python -m venv venv
-   source venv/bin/activate  # Linux/macOS
-   venv\Scripts\activate     # Windows
+   # Linux/macOS
+   source venv/bin/activate  
+   # Windows PowerShell
+   .\venv\Scripts\Activate.ps1
    
    # Instal·lar dependències
    pip install -r requirements.txt
@@ -309,6 +370,80 @@ def scrape_google_images(query, copyright_filter=None, transparent_only=False, m
 
 5. **Accedir a l'aplicació**
    - Obrir navegador i accedir a: `http://127.0.0.1:8000/`
+
+### Desplegament amb Docker
+
+El projecte està configurat per funcionar en contenidors Docker, facilitant així el desplegament i garantint un entorn consistent en diferents sistemes.
+
+1. **Prerequisits**
+   
+   ```bash
+   # Instal·lar Docker i Docker Compose
+   # Per a Windows (amb PowerShell):
+   # Descarregar i instal·lar Docker Desktop des de https://www.docker.com/products/docker-desktop
+   ```
+
+2. **Configuració de l'entorn**
+
+   Crear un fitxer `.env` a l'arrel del projecte amb les següents variables:
+   ```
+   # Variables de PostgreSQL
+   POSTGRES_DB=image_scraper
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=postgres
+   POSTGRES_HOST=db
+   POSTGRES_PORT=5432
+   PGDATA=/var/lib/postgresql/data/pgdata
+   
+   # Variables de Django
+   DEBUG=False
+   SECRET_KEY=una_clau_secreta_molt_segura
+   ALLOWED_HOSTS=localhost,127.0.0.1
+   
+   # Configuració de Superusuari (opcional)
+   DJANGO_SUPERUSER_USERNAME=admin
+   DJANGO_SUPERUSER_EMAIL=admin@exemple.com
+   DJANGO_SUPERUSER_PASSWORD=admin
+   
+   # Configuració de Gunicorn
+   GUNICORN_WORKERS=4
+   GUNICORN_WORKER_CLASS=gthread
+   GUNICORN_THREADS=2
+   GUNICORN_TIMEOUT=120
+   ```
+
+3. **Iniciar els contenidors**
+
+   ```powershell
+   # Construir i iniciar els contenidors
+   docker-compose up -d --build
+   
+   # Veure els logs en temps real
+   docker-compose logs -f
+   ```
+
+4. **Gestió dels contenidors**
+
+   ```powershell
+   # Aturar els contenidors
+   docker-compose down
+   
+   # Reiniciar els contenidors
+   docker-compose restart
+   
+   # Eliminar volums (destruir totes les dades!)
+   docker-compose down -v
+   ```
+
+5. **Accedir a l'aplicació**
+   - Obrir navegador i accedir a: `http://localhost:8080/`
+   - El panell d'administració és accessible a: `http://localhost:8080/admin/`
+   - Per defecte, l'usuari és `admin` amb contrasenya `admin`
+
+6. **Estructura dels contenidors**
+   - **db**: Base de dades PostgreSQL
+   - **web**: Aplicació Django amb Gunicorn
+   - **nginx**: Servidor web per a archius estàtics i reverse proxy
 
 ### Desplegament en Producció
 
@@ -449,66 +584,69 @@ def scrape_google_images(query, copyright_filter=None, transparent_only=False, m
 ### Còpies de Seguretat
 
 ```bash
-# Còpia de seguretat de la base de dades SQLite
+# Còpia de seguretat de la base de dades SQLite (entorn desenvolupament local)
 cp db.sqlite3 db.sqlite3.backup-$(date +%Y%m%d)
 
-# Còpia de seguretat dels mitjans
+# Còpia de seguretat dels mitjans (entorn desenvolupament local)
 tar -czf media-backup-$(date +%Y%m%d).tar.gz media/
+```
+
+### Còpies de Seguretat amb Docker
+
+```powershell
+# Còpia de seguretat de la base de dades PostgreSQL
+docker-compose exec db pg_dump -U postgres image_scraper > backup_$(Get-Date -Format "yyyyMMdd").sql
+
+# Còpia de seguretat dels volums de Docker
+docker run --rm -v django-image-scraper_media_volume:/media -v ${PWD}:/backup alpine tar -czvf /backup/media_backup_$(Get-Date -Format "yyyyMMdd").tar.gz /media
+docker run --rm -v django-image-scraper_postgres_data:/data -v ${PWD}:/backup alpine tar -czvf /backup/postgres_data_$(Get-Date -Format "yyyyMMdd").tar.gz /data
 ```
 
 ### Actualitzacions de Seguretat
 
 ```bash
-# Actualitzar dependències
+# Actualitzar dependències (entorn local)
 pip install -r requirements.txt --upgrade
 
-# Comprovar problemes de seguretat
+# Comprovar problemes de seguretat (entorn local)
 python manage.py check --deploy
+
+# Actualitzar imatges Docker (entorn Docker)
+docker-compose pull
+docker-compose up -d --build
 ```
+
+## Arquitectura API i Frontend
+
+El projecte utilitza una arquitectura híbrida:
+
+1. **Backend Django tradicional**: Genera pàgines HTML complets amb plantilles de Django per a la interfície web principal.
+
+2. **API REST**: Implementada amb Django REST Framework per permetre:
+   - Integració amb aplicacions de tercers
+   - Desenvolupament futur d'aplicacions mòbils
+   - Funcionalitat AJAX en la interfície web
+   
+3. **Contenidorització**: L'aplicació està configurada per funcionar en contenidors Docker, amb tres serveis principals:
+   - **web**: Contenidor amb Django i Gunicorn, responsable d'executar l'aplicació
+   - **db**: Contenidor amb PostgreSQL per a emmagatzematge persistent de dades
+   - **nginx**: Contenidor amb Nginx que serveix fitxers estàtics i actua com a proxy invers
+
+4. **Sistema de Base de Dades**: Compatible tant amb SQLite (desenvolupament) com PostgreSQL (producció, recomanat amb Docker).
 
 ## Limitacions i Consideracions
 
 1. **Limitacions legals**: El web scraping de Google Images pot estar subjecte a restriccions legals i de termes de servei. Es recomana utilitzar APIs oficials per a projectes comercials.
 
-2. **Escalabilitat**: SQLite té limitacions per a entorns d'alta concurrència. Considerar migrar a PostgreSQL per a aplicacions amb molt trànsit.
+2. **Escalabilitat**: SQLite té limitacions per a entorns d'alta concurrència. Considerar migrar a PostgreSQL per a aplicacions amb molt trànsit (ja configurat en Docker).
 
 3. **Robustesa del scraping**: Les tècniques de web scraping poden fallar quan Google canvia la seva estructura HTML. L'aplicació implementa diverses estratègies d'extracció com a pla de contingència.
 
 4. **Consum de recursos**: El processament i emmagatzematge d'imatges pot requerir una quantitat significativa de recursos de servidor. Implementar estratègies de compressió i optimització d'imatges.
 
+5. **Seguretat de l'API**: Cal configurar correctament l'autenticació per a endpoints sensibles, especialment en entorns de producció.
 
-## ApiRest. Per accedir als continguts de la api rest, procedir a fer curl o en el navegador:
+6. **Gestió de variables d'entorn**: En l'entorn Docker, assegureu-vos de configurar correctament el fitxer `.env` amb valors segurs, especialment en entorns de producció.
 
-Autenticación y perfil
-• POST /api/register/ – Registro de usuario
-• GET /api/profile/ – Datos del usuario autenticado
 
-CRUD imágenes (Django REST Framework ViewSet)
-• GET /api/images/ – Listar imágenes
-• POST /api/images/ – Crear imagen
-• GET /api/images/{id}/ – Detalle de imagen
-• PUT /api/images/{id}/ – Reemplazar imagen
-• PATCH /api/images/{id}/ – Actualizar parcialmente
-• DELETE /api/images/{id}/ – Borrar imagen
-
-Acciones custom sobre imágenes
-• GET /api/images/search/?query=… – Buscar imágenes
-• GET /api/images/{id}/comments/ – Listar comentarios de una imagen
-• POST /api/images/{id}/comment/ – Añadir comentario (autenticado)
-• POST /api/images/{id}/like/ – Marcar/desmarcar “me gusta” (autenticado)
-
-CRUD comentarios, likes e historial
-• GET/POST/PUT/PATCH/DELETE /api/comments/ – CRUD comentarios
-• GET/POST/PUT/PATCH/DELETE /api/likes/ – CRUD likes
-• GET/POST/PUT/PATCH/DELETE /api/history/ – CRUD historial de búsquedas
-
-Vistas web (monolítico, solo HTML)
-• GET / – Página de búsqueda (index)
-• GET /image/{id}/ – Detalle de imagen
-• POST /image/{id}/like/ – Like vía AJAX
-• POST /image/{id}/comment/ – Comentario via formulario
-• GET /profile/ – Perfil web
-• GET /advanced-search/ – Búsqueda avanzada (formulario)
-• GET/POST /signup/ – Registro de usuario
-• /admin/, /accounts/login/, /accounts/logout/… (autenticación Django)
 
