@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'scraper',
     'rest_framework',  # Added DRF for API endpoints
+    'rest_framework.authtoken',  # Add token authentication
 ]
 
 MIDDLEWARE = [
@@ -136,6 +137,10 @@ LOGIN_REDIRECT_URL = '/'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',  # Allow public API access
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
 }
 

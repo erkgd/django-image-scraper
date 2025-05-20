@@ -31,6 +31,8 @@ services:
         condition: service_healthy
     env_file:
       - ./.env
+    environment:
+      - POSTGRES_HOST=db  # Esto garantiza que se use PostgreSQL en Docker
     expose:
       - 8000
     restart: unless-stopped
