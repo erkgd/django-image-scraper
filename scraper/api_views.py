@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework import viewsets  # Add viewsets import
 from rest_framework.decorators import action  # For custom viewset actions
@@ -37,12 +38,30 @@ class LoginAPIView(APIView):
     permission_classes = [AllowAny]
     
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
+        # Log raw request for debugging
+        print("Raw request body:", request.body)
+        print("Request headers:", request.headers)
+        print("Request content type:", request.content_type)
+        
+        # Extract username and password, handling different input formats
+        if hasattr(request, 'data'):
+            username = request.data.get('username')
+            password = request.data.get('password')
+            print(f"Extracted from request.data - Username: {username}")
+        else:
+            # Backup method to extract data if request.data is not populated
+            try:
+                data = json.loads(request.body)
+                username = data.get('username')
+                password = data.get('password')
+                print(f"Extracted from JSON body - Username: {username}")
+            except:
+                print("Failed to parse JSON from request body")
+                return Response({'detail': 'Invalid request format.'}, status=400)
         
         # Log the received data for debugging (removing password for security)
         print(f"Login attempt for username: {username}")
-        print(f"Request data: {request.data}")
+        print(f"Request data type: {type(request.data)}")
         
         if not username or not password:
             return Response({'detail': 'Username and password required.'}, status=400)
@@ -52,7 +71,11 @@ class LoginAPIView(APIView):
         
         if user:
             token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key, 'id': user.id, 'username': user.username})
+            return Response({
+                'token': token.key, 
+                'id': user.id, 
+                'username': user.username
+            }, status=200)
         
         # Enhanced error response
         return Response({
